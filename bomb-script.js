@@ -1,12 +1,35 @@
 // 定義全局變數或常數
 const rowLevel = [10, 14, 18]
 const colLevel = [10, 16, 22]
-const bombLevel = [3, 30, 50]
+const bombLevel = [10, 30, 50]
 let rowTotal = 10     // 列數
 let colTotal = 10     // 欄數
 let bombsTotal = 10   // 炸彈總數
 let bombsRemain = 10  // 剩下的炸彈
 let bombsArray = []   // 炸彈陣列
+let score = {       // 分數紀錄
+    easy: 1000,
+    normal: 1000,
+    difficult: 1000
+}
+
+// 轉字串 (localStorage 只接受字串)
+let scoreString = JSON.stringify(score)
+// 建立 localStorage
+localStorage.setItem('scoreItem', scoreString)
+// 抓取 localStorage
+// let getData = localStorage.getItem('scoreItem')
+let getData = localStorage.scoreItem // 簡寫
+// 轉物件
+let scoreData = JSON.parse(getData)
+
+// 重新開始目前遊戲
+function restart() {
+    $('#restart').on('click', function () {
+        clearInterval(time)
+        startGame($('#select option:selected').val())
+    })
+}
 
 // select 選擇難度
 function reset() {
@@ -62,7 +85,8 @@ function showLevel(lv) {
 }
 
 // 開始計時
-let time = 0  // setInterval 在 function 裡，所以自定義 time 要寫在外面 clearInterval 才呼叫得到
+// setInterval 在 function 裡，所以自定義 time 要寫在外面 clearInterval 才呼叫得到
+let time = 0
 let sec = 0
 function timer() {
     sec = -1
@@ -208,11 +232,30 @@ function victory() {
         })
         if (findBomb) {
             clearInterval(time)
+
+            // 辨識最快完成速度
+            let level = $('#select option:selected').text().toLowerCase()
+            if (sec < score[level]) {
+                score[level] = sec
+            }
+
+            // 更新 localStorage 的資料
+            scoreString = JSON.stringify(score)
+            localStorage.setItem('scoreItem', scoreString)
+
+            // 更新遊戲介面最快紀錄
+            $('#level').text(level)
+            $('#sec').text(sec)
+
             Swal.fire({
                 heightAuto: false,
                 icon: "success",
                 title: "Congrats!",
-                html: `Your complete in <span style="color:#3085d6;">${sec}s</span>.`,
+                html: `You complete 
+                <span style="color:#3085d6;">${level}</span> level in 
+                <span style="color:#3085d6;">${sec}s</span>.`,
+                footer: `The top record of ${level} level was <u>${score[level]}s</u>.`,
+                // 物件object 取 value => obj.name = obj['name']
                 background: "#fff url(./images/congrats.gif) center/cover no-repeat",
                 showClass: {
                     popup: `animate__animated
@@ -279,8 +322,15 @@ $(document).ready(function () {
 
     Swal.fire({
         heightAuto: false,
-        icon: "question",
-        title: "- Start -",
+        // icon: "question",
+        imageUrl: "./images/smile.gif",
+        imageWidth: "180",
+        imageHeight: "auto",
+        title: "—— Start ——",
+        customClass: {
+            image: 'img-class',
+            title: 'title-class',
+        },
         showClass: {
             popup: `animate__animated
                     animate__bounceIn`
@@ -316,10 +366,20 @@ function startGame(lv) {
     bombsRemain = bombLevel[lv]  // 剩下的炸彈
     bombsArray = generateBombs(bombsTotal) // 炸彈陣列
 
+    restart();
     generateGrid();
     generateBombs();
     showLevel(lv);
     timer();
     countBomb(bombsTotal);
     clickEvent();
+
+    // 遊戲介面最快紀錄
+    let nowLevel = $('#select option:selected').text()
+    $('#level').text(nowLevel)
+    if (score[nowLevel.toLowerCase()] === 1000) {
+        $('#sec').text('?')
+    } else {
+        $('#sec').text(score[nowLevel])
+    }
 }
