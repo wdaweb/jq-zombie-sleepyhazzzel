@@ -118,16 +118,27 @@ select {
     background-color: #ccc;
 }
 
-#restart {
+#left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#restart,
+#info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 25px;
     height: 25px;
     border: 3.25px outset #ddd;
     background-color: #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     font-size: 14px;
     cursor: pointer;
+}
+
+#info {
+    font-size: 16px;
 }
 
 .box,
